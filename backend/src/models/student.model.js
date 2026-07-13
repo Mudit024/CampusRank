@@ -19,7 +19,6 @@ const studentSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, "Password is required."],
         minlength: [6, "Password must be at least 6 characters long."],
         select: false,
     },
@@ -85,6 +84,14 @@ const studentSchema = new mongoose.Schema({
             unlockedAt: { type: Date, default: Date.now }
         }
     ],
+    otp: {
+        type: String,
+        select: false,
+    },
+    otpExpiresAt: {
+        type: Date,
+        select: false,
+    },
     role: {
         type: String,
         enum: ['student', 'admin'],

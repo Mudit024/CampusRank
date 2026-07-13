@@ -2,6 +2,10 @@ const Student = require('../models/student.model');
 const RefreshToken = require('../models/refreshToken.model');
 const AppError = require('../utils/appError');
 const asyncHandler = require('../utils/asyncHandler');
+const { sendOTPMail } = require('../utils/mailer');
+const { OAuth2Client } = require('google-auth-library');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Cookie options for refresh tokens (7 days expiration)
 const getCookieOptions = () => {
@@ -69,32 +73,31 @@ exports.register = asyncHandler(async (req, res) => {
         throw new AppError("A student account is already registered with this email.", 409);
     }
 
-    // Create student directly as verified to bypass Nodemailer requirements in testing
+    // Generate 6-digit verification code
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
+
+    // Create student as unverified initially
     const student = await Student.create({
         name,
         email,
         password,
-        isVerified: true,
+        isVerified: false,
+        otp: otpCode,
+        otpExpiresAt,
         role: 'student'
     });
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(student._id);
+    // Send verification mail
+    await sendOTPMail(email, otpCode);
 
-    const createdStudent = await Student.findById(student._id).select("-password");
-
-    return res
-        .status(201)
-        .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
-        .cookie("refreshToken", refreshToken, getCookieOptions())
-        .json({
-            success: true,
-            message: "Student account created successfully.",
-            data: {
-                user: createdStudent,
-                accessToken,
-                refreshToken
-            }
-        });
+    return res.status(201).json({
+        success: true,
+        message: "Registration successful! A 6-digit verification OTP has been sent to your college email.",
+        data: {
+            email: student.email
+        }
+    });
 });
 
 /**
@@ -115,6 +118,10 @@ exports.login = asyncHandler(async (req, res) => {
     const isPasswordCorrect = await student.isPasswordCorrect(password);
     if (!isPasswordCorrect) {
         throw new AppError("Incorrect email or password.", 401);
+    }
+
+    if (!student.isVerified) {
+        throw new AppError("Your account has not been verified yet. Please complete email OTP verification.", 403);
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(student._id);
@@ -236,4 +243,146 @@ exports.getMe = asyncHandler(async (req, res) => {
             totalClassStudents
         }
     });
+});
+
+/**
+ * Verify OTP code for normal registration
+ */
+exports.verifyOTP = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+        throw new AppError("Email and OTP code are required.", 400);
+    }
+
+    const student = await Student.findOne({ email }).select("+otp +otpExpiresAt");
+    if (!student) {
+        throw new AppError("Student record not found.", 404);
+    }
+
+    if (student.isVerified) {
+        throw new AppError("Student email is already verified.", 400);
+    }
+
+    if (!student.otp || student.otp !== otp) {
+        throw new AppError("Invalid verification code. Please check and try again.", 400);
+    }
+
+    if (new Date() > student.otpExpiresAt) {
+        throw new AppError("Verification code has expired. Please request a new one.", 400);
+    }
+
+    // Mark as verified, clear OTP details
+    student.isVerified = true;
+    student.otp = undefined;
+    student.otpExpiresAt = undefined;
+    await student.save();
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(student._id);
+    const verifiedStudent = await Student.findById(student._id).populate("program department");
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
+        .cookie("refreshToken", refreshToken, getCookieOptions())
+        .json({
+            success: true,
+            message: "Email verified successfully! Welcome to CampusRank.",
+            data: {
+                user: verifiedStudent,
+                accessToken,
+                refreshToken
+            }
+        });
+});
+
+/**
+ * Resend OTP code for normal registration
+ */
+exports.resendOTP = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        throw new AppError("Email is required to resend verification code.", 400);
+    }
+
+    const student = await Student.findOne({ email });
+    if (!student) {
+        throw new AppError("Student record not found.", 404);
+    }
+
+    if (student.isVerified) {
+        throw new AppError("Student email is already verified.", 400);
+    }
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    student.otp = otpCode;
+    student.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await student.save();
+
+    await sendOTPMail(email, otpCode);
+
+    return res.status(200).json({
+        success: true,
+        message: "A new 6-digit OTP code has been successfully sent to your college email."
+    });
+});
+
+/**
+ * Google OAuth Sign-in / Sign-up handler
+ */
+exports.googleLogin = asyncHandler(async (req, res) => {
+    const { idToken } = req.body;
+    if (!idToken) {
+        throw new AppError("Google Identity ID Token is required.", 400);
+    }
+
+    let payload;
+    try {
+        const ticket = await googleClient.verifyIdToken({
+            idToken,
+            audience: process.env.GOOGLE_CLIENT_ID
+        });
+        payload = ticket.getPayload();
+    } catch (error) {
+        console.error("❌ Google Token Verification Error details:", error);
+        throw new AppError("Google token verification failed: " + error.message, 401);
+    }
+
+    const email = payload.email;
+    const name = payload.name || "MNNIT Student";
+
+    if (!email.toLowerCase().endsWith("@mnnit.ac.in")) {
+        throw new AppError("Access is restricted to official college emails (@mnnit.ac.in) only.", 400);
+    }
+
+    let student = await Student.findOne({ email });
+    if (!student) {
+        // Auto-create Google verified student
+        student = await Student.create({
+            name,
+            email,
+            isVerified: true,
+            role: 'student'
+        });
+    } else if (!student.isVerified) {
+        // Auto-verify account since Google has verified their identity
+        student.isVerified = true;
+        await student.save();
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(student._id);
+    const loggedInUser = await Student.findById(student._id).populate("program department");
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
+        .cookie("refreshToken", refreshToken, getCookieOptions())
+        .json({
+            success: true,
+            message: "Signed in successfully with Google.",
+            data: {
+                user: loggedInUser,
+                accessToken,
+                refreshToken
+            }
+        });
 });

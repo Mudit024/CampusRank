@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
@@ -12,6 +12,67 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
+
+    // Google Identity Services Loader
+    useEffect(() => {
+        const clientID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+        if (!clientID) return;
+
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        document.body.appendChild(script);
+
+        script.onload = () => {
+            if (window.google) {
+                window.google.accounts.id.initialize({
+                    client_id: clientID,
+                    callback: handleGoogleResponse
+                });
+
+                window.google.accounts.id.renderButton(
+                    document.getElementById('google-signin-btn'),
+                    { 
+                        theme: 'outline', 
+                        size: 'large', 
+                        width: 320,
+                        text: 'signin_with',
+                        shape: 'pill'
+                    }
+                );
+            }
+        };
+
+        return () => {
+            try {
+                document.body.removeChild(script);
+            } catch (e) {
+                // Ignore removal failure
+            }
+        };
+    }, []);
+
+    // Handle Google JWT Token response
+    const handleGoogleResponse = async (response) => {
+        setLoading(true);
+        dispatch(loginStart());
+        const toastId = toast.loading("Authenticating via Google...");
+        try {
+            const apiRes = await apiClient.post('/auth/google-login', {
+                idToken: response.credential
+            });
+            toast.success("Successfully logged in with Google!", { id: toastId });
+            dispatch(loginSuccess(apiRes.data.data.user));
+            navigate('/');
+        } catch (error) {
+            const errorMsg = error.response?.data?.message || "Google Authentication failed.";
+            dispatch(loginFailure(errorMsg));
+            toast.error(errorMsg, { id: toastId });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const { register, handleSubmit, formState: { errors } } = useForm({
         defaultValues: {
@@ -54,9 +115,9 @@ const Login = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="w-full max-w-md"
+                className="w-full max-w-md z-10"
             >
-                <div className="glass-card rounded-3xl p-8 shadow-2xl relative">
+                <div className="glass-card rounded-3xl p-8 shadow-2xl relative bg-[#0a0f1d]/50 backdrop-blur-sm border border-slate-800/40">
                     <div className="flex flex-col items-center mb-8">
                         <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-sky-400 to-indigo-600 flex items-center justify-center text-white mb-3 shadow-lg shadow-sky-500/20">
                             <Award className="h-6 w-6" />
@@ -68,7 +129,7 @@ const Login = () => {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                         
                         {/* Email Input */}
-                        <div className="space-y-1.5">
+                        <div className="space-y-1.5 text-left">
                             <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-400">College Email</label>
                             <div className="relative">
                                 <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500">
@@ -87,11 +148,11 @@ const Login = () => {
                                     })}
                                 />
                             </div>
-                            {errors.email && <p className="text-[10px] text-rose-400">{errors.email.message}</p>}
+                            {errors.email && <p className="text-[10px] text-rose-450">{errors.email.message}</p>}
                         </div>
 
                         {/* Password Input */}
-                        <div className="space-y-1.5">
+                        <div className="space-y-1.5 text-left">
                             <div className="flex justify-between items-center">
                                 <label className="block text-[10px] uppercase font-bold tracking-wider text-slate-400">Password</label>
                             </div>
@@ -106,7 +167,7 @@ const Login = () => {
                                     {...register('password', { required: 'Password is required' })}
                                 />
                             </div>
-                            {errors.password && <p className="text-[10px] text-rose-400">{errors.password.message}</p>}
+                            {errors.password && <p className="text-[10px] text-rose-450">{errors.password.message}</p>}
                         </div>
 
                         {/* Submit Button */}
@@ -124,6 +185,20 @@ const Login = () => {
                                 </>
                             )}
                         </button>
+
+                        {/* Google Auth Divider */}
+                        {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+                            <>
+                                <div className="flex items-center gap-3 my-4">
+                                    <div className="h-[1px] bg-slate-800 flex-1" />
+                                    <span className="text-[9px] text-slate-500 uppercase tracking-widest font-mono">or sign in with</span>
+                                    <div className="h-[1px] bg-slate-800 flex-1" />
+                                </div>
+
+                                {/* Google Login Button container */}
+                                <div id="google-signin-btn" className="w-full overflow-hidden flex justify-center text-xs" />
+                            </>
+                        )}
                     </form>
 
                     <div className="mt-8 text-center text-[10px] text-slate-400">
