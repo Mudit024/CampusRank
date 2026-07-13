@@ -23,7 +23,7 @@ const Navbar = () => {
             await apiClient.post('/auth/logout');
             dispatch(logoutSuccess());
             toast.success("Logged out successfully!", { id: toastId });
-            navigate('/login');
+            navigate('/');
         } catch (error) {
             toast.error("Logout failed.", { id: toastId });
         }
@@ -45,7 +45,7 @@ const Navbar = () => {
                     </span>
                 </Link>
 
-                {/* Main Navigation Links (Desktop - Conditional on Verification) */}
+                {/* Main Navigation Links (Desktop - Always Visible) */}
                 <div className="hidden md:flex items-center gap-1.5 text-xs">
                     <Link 
                         to="/"
@@ -59,47 +59,41 @@ const Navbar = () => {
                         Home
                     </Link>
 
-                    {isAuthenticated && user?.isTranscriptVerified && (
-                        <>
-                            <Link 
-                                to="/dashboard/leaderboard"
-                                className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 font-medium ${
-                                    isActive('/dashboard/leaderboard') 
-                                        ? 'bg-sky-500/10 text-sky-400 font-bold border border-sky-500/10' 
-                                        : 'text-slate-400 hover:text-white'
-                                }`}
-                            >
-                                <Trophy className="h-3.5 w-3.5" />
-                                Class Standings
-                            </Link>
+                    <Link 
+                        to="/dashboard/leaderboard"
+                        className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 font-medium ${
+                            isActive('/dashboard/leaderboard') 
+                                ? 'bg-sky-500/10 text-sky-400 font-bold border border-sky-500/10' 
+                                : 'text-slate-400 hover:text-white'
+                        }`}
+                    >
+                        <Trophy className="h-3.5 w-3.5" />
+                        Class Standings
+                    </Link>
 
-                            <Link 
-                                to="/dashboard/analytics"
-                                className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 font-medium ${
-                                    isActive('/dashboard/analytics') 
-                                        ? 'bg-sky-500/10 text-sky-400 font-bold border border-sky-500/10' 
-                                        : 'text-slate-400 hover:text-white'
-                                }`}
-                            >
-                                <TrendingUp className="h-3.5 w-3.5" />
-                                Student Analytics
-                            </Link>
-                        </>
-                    )}
+                    <Link 
+                        to="/dashboard/analytics"
+                        className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 font-medium ${
+                            isActive('/dashboard/analytics') 
+                                ? 'bg-sky-500/10 text-sky-400 font-bold border border-sky-500/10' 
+                                : 'text-slate-400 hover:text-white'
+                        }`}
+                    >
+                        <TrendingUp className="h-3.5 w-3.5" />
+                        Student Analytics
+                    </Link>
 
-                    {isAuthenticated && (
-                        <Link 
-                            to="/dashboard"
-                            className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 font-medium ${
-                                isActive('/dashboard') 
-                                    ? 'bg-sky-500/10 text-sky-400 font-bold border border-sky-500/10' 
-                                    : 'text-slate-400 hover:text-white'
-                            }`}
-                        >
-                            <LayoutDashboard className="h-3.5 w-3.5" />
-                            Dashboard
-                        </Link>
-                    )}
+                    <Link 
+                        to="/dashboard"
+                        className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 font-medium ${
+                            isActive('/dashboard') 
+                                ? 'bg-sky-500/10 text-sky-400 font-bold border border-sky-500/10' 
+                                : 'text-slate-400 hover:text-white'
+                        }`}
+                    >
+                        <LayoutDashboard className="h-3.5 w-3.5" />
+                        Dashboard
+                    </Link>
                 </div>
 
                 {/* Right Session Action Controls */}
@@ -135,38 +129,32 @@ const Navbar = () => {
                 </div>
             </div>
 
-            {/* Mobile Navigation bar (Conditional on Verification) */}
+            {/* Mobile Navigation bar (Always Visible) */}
             <div className="md:hidden flex border-t border-[rgba(255,255,255,0.03)] bg-[#070b13]/85 text-[10px] items-center justify-around py-2">
                 <Link to="/" className={`flex flex-col items-center gap-0.5 ${isActive('/') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>
                     <HomeIcon className="h-4 w-4" />
                     Home
                 </Link>
-                {isAuthenticated && user?.isTranscriptVerified && (
-                    <>
-                        <Link to="/dashboard/leaderboard" className={`flex flex-col items-center gap-0.5 ${isActive('/dashboard/leaderboard') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>
-                            <Trophy className="h-4 w-4" />
-                            Standings
-                        </Link>
-                        <Link to="/dashboard/analytics" className={`flex flex-col items-center gap-0.5 ${isActive('/dashboard/analytics') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>
-                            <TrendingUp className="h-4 w-4" />
-                            Analytics
-                        </Link>
-                    </>
-                )}
+                <Link to="/dashboard/leaderboard" className={`flex flex-col items-center gap-0.5 ${isActive('/dashboard/leaderboard') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>
+                    <Trophy className="h-4 w-4" />
+                    Standings
+                </Link>
+                <Link to="/dashboard/analytics" className={`flex flex-col items-center gap-0.5 ${isActive('/dashboard/analytics') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>
+                    <TrendingUp className="h-4 w-4" />
+                    Analytics
+                </Link>
+                <Link to="/dashboard" className={`flex flex-col items-center gap-0.5 ${isActive('/dashboard') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>
+                    <LayoutDashboard className="h-4 w-4" />
+                    Dashboard
+                </Link>
                 {isAuthenticated ? (
-                    <>
-                        <Link to="/dashboard" className={`flex flex-col items-center gap-0.5 ${isActive('/dashboard') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>
-                            <LayoutDashboard className="h-4 w-4" />
-                            Dashboard
-                        </Link>
-                        <button 
-                            onClick={handleLogout}
-                            className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-rose-400 cursor-pointer"
-                        >
-                            <LogOut className="h-4 w-4" />
-                            Log Out
-                        </button>
-                    </>
+                    <button 
+                        onClick={handleLogout}
+                        className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-rose-400 cursor-pointer"
+                    >
+                        <LogOut className="h-4 w-4" />
+                        Log Out
+                    </button>
                 ) : (
                     <Link to="/login" className={`flex flex-col items-center gap-0.5 ${isActive('/login') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>
                         <LogOut className="h-4 w-4" />

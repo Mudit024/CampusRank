@@ -33,12 +33,16 @@ function App() {
                 {/* Public Auth Routes */}
                 <Route path="/login" element={
                     <PublicRoute>
-                        <Login />
+                        <Layout>
+                            <Login />
+                        </Layout>
                     </PublicRoute>
                 } />
                 <Route path="/register" element={
                     <PublicRoute>
-                        <Register />
+                        <Layout>
+                            <Register />
+                        </Layout>
                     </PublicRoute>
                 } />
 

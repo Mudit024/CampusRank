@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
     Trophy, TrendingUp, ShieldCheck, ShieldAlert,
-    ArrowRight, GraduationCap, Users, BookOpen, Clock
+    ArrowRight, GraduationCap, Users, BookOpen, Clock, FileText
 } from 'lucide-react';
 
 const Home = () => {
@@ -105,7 +105,7 @@ const Home = () => {
                 </div>
 
                 {/* Structured Portal Columns */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left pt-6">
                     {/* Column 1 */}
                     <div className="p-6 bg-[#0a0f1d]/50 backdrop-blur-sm border border-slate-800/40 rounded-3xl space-y-3 hover:border-slate-800 transition">
                         <div className="h-10 w-10 rounded-xl bg-sky-500/5 border border-sky-500/10 flex items-center justify-center text-sky-400">
@@ -113,7 +113,7 @@ const Home = () => {
                         </div>
                         <h3 className="text-sm font-bold text-white">Standings Leaderboards</h3>
                         <p className="text-[11px] text-slate-400 leading-relaxed">
-                            View absolute rank scores across your admission batch, department branches, and program cohorts computed securely using parsed CPI details.
+                            View absolute rank standings across your admission batch, department branches, and program cohorts computed securely using verified CPI details.
                         </p>
                     </div>
 
@@ -125,6 +125,28 @@ const Home = () => {
                         <h3 className="text-sm font-bold text-white">GPA Trend Graphing</h3>
                         <p className="text-[11px] text-slate-400 leading-relaxed">
                             Plot term-by-term SPI results directly against university averages. Run comparison sweeps by inputting registration numbers side-by-side.
+                        </p>
+                    </div>
+
+                    {/* Column 3 */}
+                    <div className="p-6 bg-[#0a0f1d]/50 backdrop-blur-sm border border-slate-800/40 rounded-3xl space-y-3 hover:border-slate-800 transition">
+                        <div className="h-10 w-10 rounded-xl bg-emerald-500/5 border border-emerald-500/10 flex items-center justify-center text-emerald-400">
+                            <FileText className="h-5 w-5" />
+                        </div>
+                        <h3 className="text-sm font-bold text-white">Secure PDF Parser</h3>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                            Upload your official web-generated transcript directly. Our parser extracts GPAs and metadata instantly without manual entries.
+                        </p>
+                    </div>
+
+                    {/* Column 4 */}
+                    <div className="p-6 bg-[#0a0f1d]/50 backdrop-blur-sm border border-slate-800/40 rounded-3xl space-y-3 hover:border-slate-800 transition">
+                        <div className="h-10 w-10 rounded-xl bg-purple-500/5 border border-purple-500/10 flex items-center justify-center text-purple-400">
+                            <ShieldCheck className="h-5 w-5" />
+                        </div>
+                        <h3 className="text-sm font-bold text-white">Campus Exclusivity</h3>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                            Restricts student signups and standings exclusively to official college emails (@mnnit.ac.in) for authenticated leaderboards.
                         </p>
                     </div>
                 </div>
