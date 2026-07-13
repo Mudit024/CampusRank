@@ -58,14 +58,14 @@ function App() {
                     </ProtectedRoute>
                 } />
                 <Route path="/dashboard/leaderboard" element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requireVerified={true}>
                         <Layout>
                             <Leaderboard />
                         </Layout>
                     </ProtectedRoute>
                 } />
                 <Route path="/dashboard/analytics" element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requireVerified={true}>
                         <Layout>
                             <Analytics />
                         </Layout>

@@ -8,6 +8,10 @@ const asyncHandler = require('../utils/asyncHandler');
  * Fetch leaderboard lists and dynamic standings.
  */
 exports.getLeaderboard = asyncHandler(async (req, res) => {
+    if (!req.user || !req.user.isTranscriptVerified) {
+        throw new AppError("Access denied. Please verify your transcript to access class standings.", 403);
+    }
+
     const { page = 1, limit = 20, search, batch, department, program } = req.query;
     
     const pageNum = parseInt(page);

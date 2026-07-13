@@ -15,15 +15,7 @@ exports.getAcademicAnalytics = asyncHandler(async (req, res) => {
     }
 
     if (!student.isTranscriptVerified) {
-        return res.status(200).json({
-            success: true,
-            message: "Verify profile to access analytics.",
-            data: {
-                averages: { college: 0, department: 0, program: 0 },
-                highestCgpa: { college: 0, department: 0, program: 0 },
-                history: []
-            }
-        });
+        throw new AppError("Access denied. Please verify your transcript to access student analytics.", 403);
     }
 
     // 1. Calculate College, Department and Program CGPA Stats (Averages & Highs)

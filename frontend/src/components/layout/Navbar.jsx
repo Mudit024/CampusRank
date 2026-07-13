@@ -45,7 +45,7 @@ const Navbar = () => {
                     </span>
                 </Link>
 
-                {/* Main Navigation Links (Desktop - Always Available) */}
+                {/* Main Navigation Links (Desktop - Conditional on Verification) */}
                 <div className="hidden md:flex items-center gap-1.5 text-xs">
                     <Link 
                         to="/"
@@ -59,29 +59,33 @@ const Navbar = () => {
                         Home
                     </Link>
 
-                    <Link 
-                        to="/dashboard/leaderboard"
-                        className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 font-medium ${
-                            isActive('/dashboard/leaderboard') 
-                                ? 'bg-sky-500/10 text-sky-400 font-bold border border-sky-500/10' 
-                                : 'text-slate-400 hover:text-white'
-                        }`}
-                    >
-                        <Trophy className="h-3.5 w-3.5" />
-                        Class Standings
-                    </Link>
+                    {isAuthenticated && user?.isTranscriptVerified && (
+                        <>
+                            <Link 
+                                to="/dashboard/leaderboard"
+                                className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 font-medium ${
+                                    isActive('/dashboard/leaderboard') 
+                                        ? 'bg-sky-500/10 text-sky-400 font-bold border border-sky-500/10' 
+                                        : 'text-slate-400 hover:text-white'
+                                }`}
+                            >
+                                <Trophy className="h-3.5 w-3.5" />
+                                Class Standings
+                            </Link>
 
-                    <Link 
-                        to="/dashboard/analytics"
-                        className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 font-medium ${
-                            isActive('/dashboard/analytics') 
-                                ? 'bg-sky-500/10 text-sky-400 font-bold border border-sky-500/10' 
-                                : 'text-slate-400 hover:text-white'
-                        }`}
-                    >
-                        <TrendingUp className="h-3.5 w-3.5" />
-                        Student Analytics
-                    </Link>
+                            <Link 
+                                to="/dashboard/analytics"
+                                className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 font-medium ${
+                                    isActive('/dashboard/analytics') 
+                                        ? 'bg-sky-500/10 text-sky-400 font-bold border border-sky-500/10' 
+                                        : 'text-slate-400 hover:text-white'
+                                }`}
+                            >
+                                <TrendingUp className="h-3.5 w-3.5" />
+                                Student Analytics
+                            </Link>
+                        </>
+                    )}
 
                     {isAuthenticated && (
                         <Link 
@@ -131,20 +135,24 @@ const Navbar = () => {
                 </div>
             </div>
 
-            {/* Mobile Navigation bar (Always Available) */}
+            {/* Mobile Navigation bar (Conditional on Verification) */}
             <div className="md:hidden flex border-t border-[rgba(255,255,255,0.03)] bg-[#070b13]/85 text-[10px] items-center justify-around py-2">
                 <Link to="/" className={`flex flex-col items-center gap-0.5 ${isActive('/') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>
                     <HomeIcon className="h-4 w-4" />
                     Home
                 </Link>
-                <Link to="/dashboard/leaderboard" className={`flex flex-col items-center gap-0.5 ${isActive('/dashboard/leaderboard') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>
-                    <Trophy className="h-4 w-4" />
-                    Standings
-                </Link>
-                <Link to="/dashboard/analytics" className={`flex flex-col items-center gap-0.5 ${isActive('/dashboard/analytics') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>
-                    <TrendingUp className="h-4 w-4" />
-                    Analytics
-                </Link>
+                {isAuthenticated && user?.isTranscriptVerified && (
+                    <>
+                        <Link to="/dashboard/leaderboard" className={`flex flex-col items-center gap-0.5 ${isActive('/dashboard/leaderboard') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>
+                            <Trophy className="h-4 w-4" />
+                            Standings
+                        </Link>
+                        <Link to="/dashboard/analytics" className={`flex flex-col items-center gap-0.5 ${isActive('/dashboard/analytics') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>
+                            <TrendingUp className="h-4 w-4" />
+                            Analytics
+                        </Link>
+                    </>
+                )}
                 {isAuthenticated ? (
                     <>
                         <Link to="/dashboard" className={`flex flex-col items-center gap-0.5 ${isActive('/dashboard') ? 'text-sky-400 font-bold' : 'text-slate-400'}`}>

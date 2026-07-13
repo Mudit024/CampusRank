@@ -3,8 +3,8 @@ import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-    Trophy, TrendingUp, Sparkles, ShieldCheck, 
-    ArrowRight, GraduationCap, Users, Award, BookOpen, Clock
+    Trophy, TrendingUp, ShieldCheck, ShieldAlert,
+    ArrowRight, GraduationCap, Users, BookOpen, Clock
 } from 'lucide-react';
 
 const Home = () => {
@@ -14,13 +14,13 @@ const Home = () => {
 
     return (
         <div className="min-h-screen bg-[#060a12] text-slate-300 relative overflow-hidden flex flex-col justify-between">
-            {/* Cinematic Blurred MNNIT Campus Background Overlay */}
+            {/* Cinematic MNNIT Campus Background Overlay */}
             <div 
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat filter blur-[6px] scale-105 opacity-[0.16] pointer-events-none z-0" 
+                className="absolute inset-0 bg-[length:100%_auto] bg-top bg-no-repeat opacity-[0.25] pointer-events-none z-0" 
                 style={{ backgroundImage: "url('/mnnit_campus.png')" }} 
             />
             {/* Vignette dark overlay shroud */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#060a12]/90 via-[#060a12]/70 to-[#060a12] pointer-events-none z-0" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#060a12]/30 via-[#060a12]/75 to-[#060a12] pointer-events-none z-0" />
 
             {/* Main Hero & Content Container */}
             <div className="relative z-10 flex-1 flex flex-col justify-center max-w-6xl w-full mx-auto px-4 py-16 md:py-24 text-center space-y-16">
@@ -58,6 +58,18 @@ const Home = () => {
                         Upload your official web-generated transcript to parse academic summaries. Securely evaluate your CPI standings, check absolute ranks within department cohorts, and visualize progress trends.
                     </motion.p>
 
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.25 }}
+                        className="max-w-xl mx-auto p-4 bg-amber-500/5 border border-amber-500/15 rounded-2xl text-[10px] text-amber-400 font-mono leading-relaxed text-left flex items-start gap-2 shadow-lg"
+                    >
+                        <ShieldAlert className="h-4.5 w-4.5 text-amber-400 shrink-0 mt-0.5" />
+                        <span>
+                            <strong>Privacy Notice:</strong> This data is public and your CPI can be viewed by other students on the standings leaderboard. If you are willing to make this information public, only then proceed to verify and update your profile transcript.
+                        </span>
+                    </motion.div>
+
                     <motion.div 
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -93,7 +105,7 @@ const Home = () => {
                 </div>
 
                 {/* Structured Portal Columns */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left pt-6">
                     {/* Column 1 */}
                     <div className="p-6 bg-[#0a0f1d]/50 backdrop-blur-sm border border-slate-800/40 rounded-3xl space-y-3 hover:border-slate-800 transition">
                         <div className="h-10 w-10 rounded-xl bg-sky-500/5 border border-sky-500/10 flex items-center justify-center text-sky-400">
@@ -113,17 +125,6 @@ const Home = () => {
                         <h3 className="text-sm font-bold text-white">GPA Trend Graphing</h3>
                         <p className="text-[11px] text-slate-400 leading-relaxed">
                             Plot term-by-term SPI results directly against university averages. Run comparison sweeps by inputting registration numbers side-by-side.
-                        </p>
-                    </div>
-
-                    {/* Column 3 */}
-                    <div className="p-6 bg-[#0a0f1d]/50 backdrop-blur-sm border border-slate-800/40 rounded-3xl space-y-3 hover:border-slate-800 transition">
-                        <div className="h-10 w-10 rounded-xl bg-amber-500/5 border border-amber-500/10 flex items-center justify-center text-amber-400">
-                            <Award className="h-5 w-5" />
-                        </div>
-                        <h3 className="text-sm font-bold text-white">Academic Milestone Badges</h3>
-                        <p className="text-[11px] text-slate-400 leading-relaxed">
-                            Earn and unlock verifiable badges like Dean's List or Academic Ascent for maintaining high CPI benchmarks or improving term scores.
                         </p>
                     </div>
                 </div>

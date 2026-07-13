@@ -195,3 +195,45 @@ exports.refreshAccessToken = asyncHandler(async (req, res) => {
             }
         });
 });
+
+/**
+ * Retrieve authenticated student profile details with class rank standings.
+ */
+exports.getMe = asyncHandler(async (req, res) => {
+    const student = await Student.findById(req.user._id).populate("program department");
+    if (!student) {
+        throw new AppError("Student profile not found.", 404);
+    }
+
+    let classRank = null;
+    let totalClassStudents = null;
+    if (student.isTranscriptVerified) {
+        classRank = await Student.countDocuments({
+            isTranscriptVerified: true,
+            role: 'student',
+            program: student.program?._id,
+            batch: student.batch,
+            $or: [
+                { cgpa: { $gt: student.cgpa } },
+                { cgpa: student.cgpa, rollNumber: { $lt: student.rollNumber } }
+            ]
+        }) + 1;
+
+        totalClassStudents = await Student.countDocuments({
+            isTranscriptVerified: true,
+            role: 'student',
+            program: student.program?._id,
+            batch: student.batch
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        message: "Student profile retrieved successfully.",
+        data: {
+            ...student.toObject(),
+            classRank,
+            totalClassStudents
+        }
+    });
+});

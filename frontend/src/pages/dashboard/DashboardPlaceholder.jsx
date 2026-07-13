@@ -34,7 +34,7 @@ const DashboardPlaceholder = () => {
         <div className="min-h-screen bg-[#060a12] text-slate-300 relative overflow-hidden flex flex-col justify-start py-10 px-4">
             {/* Blurred Campus Watermark background overlay */}
             <div 
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat filter blur-[8px] scale-105 opacity-[0.06] pointer-events-none z-0" 
+                className="absolute inset-0 bg-[length:100%_auto] bg-top bg-no-repeat filter blur-[8px] opacity-[0.05] pointer-events-none z-0" 
                 style={{ backgroundImage: "url('/mnnit_campus.png')" }} 
             />
             {/* Vignette dark overlay shroud */}
@@ -87,11 +87,22 @@ const DashboardPlaceholder = () => {
                                         Verified Profile
                                     </span>
                                 </div>
-                                
-                                {/* Circular CGPA Display Ring */}
-                                <div className="h-16 w-16 rounded-full border-[3px] border-emerald-500/20 bg-[#060a12] flex flex-col items-center justify-center shadow-lg shadow-emerald-500/5 relative shrink-0">
-                                    <span className="text-[8px] uppercase tracking-widest text-slate-500 font-mono block leading-none">CPI</span>
-                                    <span className="text-white text-xs font-black block mt-0.5 leading-none">{user?.cgpa?.toFixed(2) || '0.00'}</span>
+                                <div className="flex items-center gap-2.5">
+                                    {/* Circular Class Rank Display Ring */}
+                                    {user?.classRank && (
+                                        <div className="h-16 w-16 rounded-full border-[3px] border-sky-500/20 bg-[#060a12] flex flex-col items-center justify-center shadow-lg shadow-sky-500/5 relative shrink-0">
+                                            <span className="text-[8px] uppercase tracking-widest text-slate-500 font-mono block leading-none">Rank</span>
+                                            <span className="text-sky-400 text-[10px] sm:text-xs font-black block mt-0.5 leading-none">
+                                                {user.classRank}/{user.totalClassStudents || user.classRank}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Circular CGPA Display Ring */}
+                                    <div className="h-16 w-16 rounded-full border-[3px] border-emerald-500/20 bg-[#060a12] flex flex-col items-center justify-center shadow-lg shadow-emerald-500/5 relative shrink-0">
+                                        <span className="text-[8px] uppercase tracking-widest text-slate-500 font-mono block leading-none">CPI</span>
+                                        <span className="text-white text-xs font-black block mt-0.5 leading-none">{user?.cgpa?.toFixed(2) || '0.00'}</span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -105,6 +116,14 @@ const DashboardPlaceholder = () => {
                                     <span>Registration:</span>
                                     <span className="text-white font-semibold">{user?.rollNumber}</span>
                                 </div>
+                                {user?.classRank && (
+                                    <div className="flex justify-between border-b border-slate-800/40 pb-2">
+                                        <span>Class Rank:</span>
+                                        <span className="text-sky-400 font-semibold">
+                                            #{user.classRank} / {user.totalClassStudents || user.classRank}
+                                        </span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between border-b border-slate-800/40 pb-2">
                                     <span>Branch/Dept:</span>
                                     <span className="text-sky-400 font-semibold">{user?.department?.code}</span>
