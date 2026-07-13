@@ -7,8 +7,10 @@ import DashboardPlaceholder from './pages/dashboard/DashboardPlaceholder.jsx';
 import TranscriptUpload from './pages/dashboard/TranscriptUpload.jsx';
 import Leaderboard from './pages/dashboard/Leaderboard.jsx';
 import Analytics from './pages/dashboard/Analytics.jsx';
+import Home from './pages/Home.jsx';
 import ProtectedRoute from './components/routes/ProtectedRoute.jsx';
 import PublicRoute from './components/routes/PublicRoute.jsx';
+import Layout from './components/layout/Layout.jsx';
 
 function App() {
     return (
@@ -43,28 +45,41 @@ function App() {
                 {/* Protected Dashboard Routes */}
                 <Route path="/dashboard" element={
                     <ProtectedRoute>
-                        <DashboardPlaceholder />
+                        <Layout>
+                            <DashboardPlaceholder />
+                        </Layout>
                     </ProtectedRoute>
                 } />
                 <Route path="/dashboard/upload" element={
                     <ProtectedRoute>
-                        <TranscriptUpload />
+                        <Layout>
+                            <TranscriptUpload />
+                        </Layout>
                     </ProtectedRoute>
                 } />
                 <Route path="/dashboard/leaderboard" element={
                     <ProtectedRoute>
-                        <Leaderboard />
+                        <Layout>
+                            <Leaderboard />
+                        </Layout>
                     </ProtectedRoute>
                 } />
                 <Route path="/dashboard/analytics" element={
                     <ProtectedRoute>
-                        <Analytics />
+                        <Layout>
+                            <Analytics />
+                        </Layout>
                     </ProtectedRoute>
                 } />
                 
+                <Route path="/" element={
+                    <Layout>
+                        <Home />
+                    </Layout>
+                } />
+                
                 {/* Fallbacks */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                <Route path="*" element={<Navigate to="/login" replace />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </>
     );

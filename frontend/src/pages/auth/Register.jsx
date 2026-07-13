@@ -40,8 +40,8 @@ const Register = () => {
             const { user } = response.data.data;
             dispatch(loginSuccess(user));
             
-            // Redirect straight to dashboard home
-            navigate('/dashboard');
+            // Redirect straight to root home
+            navigate('/');
         } catch (error) {
             const errorMsg = error.response?.data?.message || "Registration failed. Please try again.";
             toast.error(errorMsg, { id: toastId });

@@ -34,7 +34,7 @@ const Login = () => {
             const { user } = response.data.data;
             dispatch(loginSuccess(user));
             
-            navigate('/dashboard');
+            navigate('/');
         } catch (error) {
             const errorMsg = error.response?.data?.message || "Invalid credentials. Please try again.";
             dispatch(loginFailure(errorMsg));
