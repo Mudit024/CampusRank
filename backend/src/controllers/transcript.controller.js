@@ -9,7 +9,6 @@ const { calculateSHA256 } = require('../utils/hash');
 const { parseTranscriptPDF } = require('../utils/pdfParser');
 const { uploadToCloudinary } = require('../config/cloudinary');
 const asyncHandler = require('../utils/asyncHandler');
-const { runAchievementEngine } = require('../utils/achievementEngine');
 
 /**
  * Handles transcript upload, validation, parsing, and syncing.
@@ -137,11 +136,6 @@ exports.uploadTranscript = asyncHandler(async (req, res) => {
         title: "Transcript Verified",
         message: "Your transcript has been parsed. Ranks and analytics have been updated!",
         type: 'transcript_verified'
-    });
-
-    // 10. Run achievement scan asynchronously
-    runAchievementEngine(studentId).catch(err => {
-        console.error("❌ Achievement evaluation failure: ", err);
     });
 
     const refreshedStudent = await Student.findById(studentId).populate("program department");
