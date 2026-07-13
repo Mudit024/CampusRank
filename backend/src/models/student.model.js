@@ -67,12 +67,24 @@ const studentSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    cgpa: {
+        type: Number,
+        index: true,
+    },
     transcriptHash: {
         type: String,
         unique: true,
         sparse: true,
         index: true,
     },
+    achievements: [
+        {
+            title: { type: String, required: true },
+            description: { type: String, required: true },
+            icon: { type: String, required: true },
+            unlockedAt: { type: Date, default: Date.now }
+        }
+    ],
     role: {
         type: String,
         enum: ['student', 'admin'],

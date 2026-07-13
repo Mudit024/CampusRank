@@ -35,8 +35,14 @@ app.get('/health', (req, res) => {
 // Register routers
 const authRouter = require('./routes/auth.routes');
 const transcriptRouter = require('./routes/transcript.routes');
+const leaderboardRouter = require('./routes/leaderboard.routes');
+const analyticsRouter = require('./routes/analytics.routes');
+const notificationRouter = require('./routes/notification.routes');
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/transcripts', transcriptRouter);
+app.use('/api/v1/leaderboard', leaderboardRouter);
+app.use('/api/v1/analytics', analyticsRouter);
+app.use('/api/v1/notifications', notificationRouter);
 
 // Undefined routes catch-all
 app.use((req, res, next) => {

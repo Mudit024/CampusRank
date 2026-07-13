@@ -1,27 +1,13 @@
 const { PDFParse } = require('pdf-parse');
 
-/**
- * Maps letter grades to standard university grade points (10-point scale)
- */
-const getGradePoints = (grade) => {
-    const scale = {
-        'O': 10,
-        'A+': 10,
-        'A': 9,
-        'B+': 8,
-        'B': 7,
-        'C': 6,
-        'D': 5,
-        'P': 4,
-        'E': 4,
-        'F': 0
-    };
-    const cleanedGrade = grade.toUpperCase().trim();
-    return scale[cleanedGrade] !== undefined ? scale[cleanedGrade] : 0;
+const romanToNum = (roman) => {
+    const map = { i: 1, ii: 2, iii: 3, iv: 4, v: 5, vi: 6, vii: 7, viii: 8 };
+    return map[roman.toLowerCase()] || 0;
 };
 
 /**
  * Parses raw text from transcript PDF buffer and extracts academic structured JSON.
+ * Tailored specifically to MNNIT Allahabad web-generated transcripts.
  * @param {Buffer} pdfBuffer - File buffer from Multer
  */
 const parseTranscriptPDF = async (pdfBuffer) => {
@@ -35,95 +21,84 @@ const parseTranscriptPDF = async (pdfBuffer) => {
         }
 
         // 1. Parse Metadata using regular expressions
-        const nameMatch = text.match(/Name:\s*([^\r\n|]+)/i) || text.match(/Student\s*Name:\s*([^\r\n|]+)/i);
-        const rollMatch = text.match(/Roll\s*(?:Number|No):\s*([^\r\n|]+)/i) || text.match(/Enrollment\s*(?:Number|No):\s*([^\r\n|]+)/i);
-        const programMatch = text.match(/Program:\s*([^\r\n|]+)/i);
-        const deptMatch = text.match(/Department:\s*([^\r\n|]+)/i) || text.match(/Branch:\s*([^\r\n|]+)/i);
-        const batchMatch = text.match(/Batch:\s*(\d{4})/i);
+        const nameMatch = text.match(/Name\s*:\s*([^\r\n]+)/i);
+        const rollMatch = text.match(/Registration\s*No\s*:\s*([^\r\n]+)/i) || text.match(/Roll\s*(?:Number|No):\s*([^\r\n]+)/i);
+        const degreeMatch = text.match(/Degree\s*:\s*([^\r\n]+)/i) || text.match(/Program:\s*([^\r\n]+)/i);
+        const branchMatch = text.match(/Branch\s*:\s*([^\r\n]+)/i) || text.match(/Department:\s*([^\r\n]+)/i);
 
-        if (!nameMatch || !rollMatch || !programMatch || !deptMatch) {
-            throw new Error("Missing mandatory transcript identifiers (Name, Roll Number, Program, or Department).");
+        if (!nameMatch || !rollMatch || !degreeMatch || !branchMatch) {
+            throw new Error("Missing mandatory transcript identifiers (Name, Registration No, Degree, or Branch).");
         }
 
         const name = nameMatch[1].trim();
         const rollNumber = rollMatch[1].trim().toUpperCase();
-        const programCode = programMatch[1].trim().toUpperCase();
-        const deptCode = deptMatch[1].trim().toUpperCase();
-        const batch = batchMatch ? parseInt(batchMatch[1]) : null;
+        
+        // Maps Master of Computer Applications -> MCA
+        let programCode = degreeMatch[1].trim();
+        if (programCode.toLowerCase().includes("computer applications")) {
+            programCode = "MCA";
+        } else {
+            programCode = programCode.split(/\s+/).map(w => w[0]).join("").toUpperCase();
+        }
 
-        // 2. Parse Semesters
-        // We split the document text on instances of "Semester:" keyword
-        const semesterBlocks = text.split(/Semester:\s*/i);
+        // Maps Branch (Not Applicable -> CA or CSE)
+        let deptCode = branchMatch[1].trim().toUpperCase();
+        if (deptCode === "NOT APPLICABLE" || deptCode === "N/A" || deptCode === "") {
+            deptCode = programCode === "MCA" ? "CA" : "CSE";
+        }
+
+        // Extract batch from registration number (e.g. 2024CA057 -> Batch 2024)
+        const rollYearMatch = rollNumber.match(/^(20\d{2})/);
+        const batch = rollYearMatch ? parseInt(rollYearMatch[1]) : new Date().getFullYear() - 3;
+
+        // 2. Parse Bottom CPI Table (Cumulative Performance Index)
+        const cpiValues = [];
+        const cpiTableMatch = text.match(/CPI\s+([\d.\s]+)/i);
+        if (cpiTableMatch) {
+            const numbers = cpiTableMatch[1].trim().split(/\s+/).map(parseFloat).filter(n => !isNaN(n));
+            cpiValues.push(...numbers);
+        }
+
+        // 3. Parse Semesters Performance Index (SPI)
+        const regex = /([IVXLC]+)\s+semester/gi;
+        const indices = [];
+        let match;
+        
+        while ((match = regex.exec(text)) !== null) {
+            indices.push({
+                roman: match[1],
+                index: match.index
+            });
+        }
+
         const semesters = [];
 
-        // Index 0 represents text BEFORE the first "Semester:" (general headers/metadata), so we start at 1
-        for (let i = 1; i < semesterBlocks.length; i++) {
-            const block = semesterBlocks[i];
+        for (let i = 0; i < indices.length; i++) {
+            const current = indices[i];
+            const nextIndex = indices[i + 1] ? indices[i + 1].index : text.length;
+            const block = text.slice(current.index, nextIndex);
+            const semesterNumber = romanToNum(current.roman);
 
-            // Extract semester number (should be leading digits)
-            const semNumMatch = block.match(/^(\d+)/);
-            if (!semNumMatch) continue;
-            const semesterNumber = parseInt(semNumMatch[1]);
+            if (semesterNumber === 0) continue;
 
-            // Extract SGPA & CGPA
-            const sgpaMatch = block.match(/SGPA:\s*([0-9.]+)/i);
-            const cgpaMatch = block.match(/CGPA:\s*([0-9.]+)/i);
+            // Extract SPI for this semester
+            const spiMatch = block.match(/SPI\s*([\d.]+)/i);
+            if (!spiMatch) continue;
+            const sgpa = parseFloat(spiMatch[1]);
 
-            if (!sgpaMatch || !cgpaMatch) continue;
-
-            const sgpa = parseFloat(sgpaMatch[1]);
-            const cgpa = parseFloat(cgpaMatch[1]);
-
-            // Extract subjects for this semester
-            // Standard format: SubjectCode | SubjectName | Grade | Credits
-            const subjects = [];
-            const lines = block.split('\n');
-            let isParsingSubjects = false;
-
-            for (const line of lines) {
-                const lowerLine = line.toLowerCase().trim();
-                
-                if (lowerLine.includes('subjects:')) {
-                    isParsingSubjects = true;
-                    continue;
-                }
-
-                // Stop scanning subjects if we transition to a different block
-                if (lowerLine.includes('semester:')) {
-                    break;
-                }
-
-                if (isParsingSubjects) {
-                    const parts = line.split('|');
-                    if (parts.length >= 4) {
-                        const subjectCode = parts[0].trim().toUpperCase();
-                        const subjectName = parts[1].trim();
-                        const grade = parts[2].trim().toUpperCase();
-                        const credits = parseInt(parts[3].trim());
-
-                        if (subjectCode && subjectName && grade && !isNaN(credits)) {
-                            subjects.push({
-                                subjectCode,
-                                subjectName,
-                                grade,
-                                credits,
-                                gradePoints: getGradePoints(grade)
-                            });
-                        }
-                    }
-                }
-            }
+            // Map CPI from bottom CPI table list
+            const cgpa = cpiValues[semesterNumber - 1] !== undefined ? cpiValues[semesterNumber - 1] : sgpa;
 
             semesters.push({
                 semesterNumber,
                 sgpa,
                 cgpa,
-                subjects
+                subjects: [] // Bypassed subject information as requested
             });
         }
 
         if (semesters.length === 0) {
-            throw new Error("No semesters or GPA records could be parsed from the transcript.");
+            throw new Error("No semesters or GPA records (SPI/CPI) could be parsed from the transcript.");
         }
 
         return {

@@ -5,6 +5,8 @@ import Login from './pages/auth/Login.jsx';
 import Register from './pages/auth/Register.jsx';
 import DashboardPlaceholder from './pages/dashboard/DashboardPlaceholder.jsx';
 import TranscriptUpload from './pages/dashboard/TranscriptUpload.jsx';
+import Leaderboard from './pages/dashboard/Leaderboard.jsx';
+import Analytics from './pages/dashboard/Analytics.jsx';
 import ProtectedRoute from './components/routes/ProtectedRoute.jsx';
 import PublicRoute from './components/routes/PublicRoute.jsx';
 
@@ -47,6 +49,16 @@ function App() {
                 <Route path="/dashboard/upload" element={
                     <ProtectedRoute>
                         <TranscriptUpload />
+                    </ProtectedRoute>
+                } />
+                <Route path="/dashboard/leaderboard" element={
+                    <ProtectedRoute>
+                        <Leaderboard />
+                    </ProtectedRoute>
+                } />
+                <Route path="/dashboard/analytics" element={
+                    <ProtectedRoute>
+                        <Analytics />
                     </ProtectedRoute>
                 } />
                 
