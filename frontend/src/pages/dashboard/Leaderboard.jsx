@@ -243,59 +243,18 @@ const Leaderboard = () => {
                     <motion.div 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                        className="flex justify-center"
                     >
-                        {/* Overall College Rank */}
-                        <div className="glass-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between group hover:border-sky-500/30 transition-all duration-300">
-                            <div className="absolute top-[-30%] right-[-10%] h-20 w-20 bg-sky-500/5 rounded-full blur-xl" />
-                            <div className="flex items-center justify-between">
-                                <span className="text-[10px] uppercase font-bold tracking-wider text-sky-400">College Rank</span>
-                                <Trophy className="h-4 w-4 text-sky-400" />
-                            </div>
-                            <div className="mt-3">
-                                <span className="text-3xl font-black text-white font-mono">#{myRanks.college}</span>
-                                <div className="text-[10px] text-emerald-400 font-semibold mt-1 flex items-center gap-1">
-                                    <span>{getPercentile(myRanks.college, totalStudentsCount)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Batch Rank */}
-                        <div className="glass-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between group hover:border-indigo-500/30 transition-all duration-300">
-                            <div className="absolute top-[-30%] right-[-10%] h-20 w-20 bg-indigo-500/5 rounded-full blur-xl" />
-                            <div className="flex items-center justify-between">
-                                <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-400">Batch Rank</span>
-                                <Medal className="h-4 w-4 text-indigo-400" />
-                            </div>
-                            <div className="mt-3">
-                                <span className="text-3xl font-black text-white font-mono">#{myRanks.batch}</span>
-                                <span className="block text-[10px] text-slate-400 mt-1">Class of {user?.batch}</span>
-                            </div>
-                        </div>
-
                         {/* Branch Rank */}
-                        <div className="glass-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between group hover:border-emerald-500/30 transition-all duration-300">
+                        <div className="glass-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between group hover:border-emerald-500/30 transition-all duration-300 w-full max-w-sm">
                             <div className="absolute top-[-30%] right-[-10%] h-20 w-20 bg-emerald-500/5 rounded-full blur-xl" />
                             <div className="flex items-center justify-between">
-                                <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400">Branch Rank</span>
-                                <Users className="h-4 w-4 text-emerald-400" />
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400">Class Standing (Branch Rank)</span>
+                                <Users className="h-4.5 w-4.5 text-emerald-400" />
                             </div>
-                            <div className="mt-3">
+                            <div className="mt-3 flex items-baseline justify-between">
                                 <span className="text-3xl font-black text-white font-mono">#{myRanks.department}</span>
-                                <span className="block text-[10px] text-slate-400 mt-1">Branch: {user?.department?.code}</span>
-                            </div>
-                        </div>
-
-                        {/* Class/Program Rank */}
-                        <div className="glass-card rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between group hover:border-purple-500/30 transition-all duration-300">
-                            <div className="absolute top-[-30%] right-[-10%] h-20 w-20 bg-purple-500/5 rounded-full blur-xl" />
-                            <div className="flex items-center justify-between">
-                                <span className="text-[10px] uppercase font-bold tracking-wider text-purple-400">Program Rank</span>
-                                <GraduationCap className="h-4 w-4 text-purple-400" />
-                            </div>
-                            <div className="mt-3">
-                                <span className="text-3xl font-black text-white font-mono">#{myRanks.class}</span>
-                                <span className="block text-[10px] text-slate-400 mt-1">Degree: {user?.program?.code}</span>
+                                <span className="text-[10px] text-slate-400 font-mono">Branch: {user?.department?.code}</span>
                             </div>
                         </div>
                     </motion.div>
